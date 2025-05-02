@@ -1,0 +1,7 @@
+logs/
+.venv/
+*.pyc
+__pycache__/
+vi.log
+vi.stdout.log
+vi.stderr.log
