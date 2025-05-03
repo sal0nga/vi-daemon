@@ -6,6 +6,8 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
+from vi_baseline import update_baseline
+
 # Define log file location
 log_file = Path.home() / '.vi' / 'logs' / 'vi.log'
 log_file.parent.mkdir(parents=True, exist_ok=True)
@@ -31,17 +33,23 @@ def log_active_processes():
 
 def log_network_connections():
     logging.info('Network Connections:')
+    connections = [] # New: collect connection objects
+
     for conn in psutil.net_connections(kind='inet'):
         laddr = f'{conn.laddr.ip}:{conn.laddr.port}' if conn.laddr else 'N/A'
         raddr = f'{conn.laddr.ip}:{conn.laddr.port}' if conn.laddr else 'N/A'
         logging.info(f'     {conn.status}: {laddr} -> {raddr}')
+        connections.append(conn)
+    
+    return connections
 
 def main():
     log_boot_time()
     while True:
         logging.info('--- Snapshot ---')
         log_active_processes()
-        log_network_connections()
+        connections = log_network_connections()
+        update_baseline(connections)
         time.sleep(10)
 
 if __name__ == '__main__':
