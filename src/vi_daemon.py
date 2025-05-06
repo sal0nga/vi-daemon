@@ -3,8 +3,11 @@
 import psutil
 import time
 import logging
+import subprocess
+import re
 from datetime import datetime
 from pathlib import Path
+from collections import namedtuple
 
 from vi_baseline import update_baseline
 
@@ -31,16 +34,42 @@ def log_active_processes():
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             continue
 
-def log_network_connections():
-    logging.info('Network Connections:')
-    connections = [] # New: collect connection objects
+Connection = namedtuple('Connection', ['laddr', 'raddr', 'status'])
 
-    for conn in psutil.net_connections(kind='inet'):
-        laddr = f'{conn.laddr.ip}:{conn.laddr.port}' if conn.laddr else 'N/A'
-        raddr = f'{conn.laddr.ip}:{conn.laddr.port}' if conn.laddr else 'N/A'
-        logging.info(f'     {conn.status}: {laddr} -> {raddr}')
-        connections.append(conn)
+def log_network_connections():
+    logging.info('Network Connections (via lsof):')
+    connections = []
+
+    try:
+        result = subprocess.run(
+            ['lsof', '-i', '-n', '-P'],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True
+        )
+
+        lines = result.stdout.strip().split('\n')
+
+        for line in lines:
+            if 'ESTABLISHED' not in line:
+                continue
+            
+            parts = re.split(r'\s+', line)
+            if len(parts) < 9:
+                continue
+
+            name, pid, user, fd, type_, device, size_off, node, name_field = parts[:9]
+
+            if '->' in name_field:
+                laddr, raddr = name_field.split('->')
+                conn = Connection(laddr=laddr, raddr=raddr, status='ESTABLISHED')
+                logging.info(f'     {conn.status}: {conn.laddr} -> {conn.raddr}')
+                connections.append(conn)
     
+    except Exception as e:
+        logging.warning(f"[WARN] Failed to read connections via lsof: {e}")
+
+    logging.info(f"[DEBUG] Total Established connections: {len(connections)}")
     return connections
 
 def main():

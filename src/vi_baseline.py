@@ -8,10 +8,14 @@ BASELINE_FILE = Path.home() / ".vi" / "config" / "baseline.json"
 BASELINE_FILE.parent.mkdir(parents=True, exist_ok=True)
 
 def load_baseline():
-    if BASELINE_FILE.exists():
-        with open(BASELINE_FILE, "r") as f:
-            return json.load(f)
-        return {"known_ips": []}
+    try:
+        if BASELINE_FILE.exists():
+            with open(BASELINE_FILE, "r") as f:
+                return json.load(f)
+            return {"known_ips": []}
+    except Exception as e:
+        logging.warning(f"[WARN] Failed to  load baseline: {e}")
+    return {"known_ips": []}
 
 def save_baseline(data):
     with open(BASELINE_FILE, "w") as f:
@@ -22,10 +26,13 @@ def update_baseline(connections):
     known_ips = set(baseline.get("known_ips", []))
     new_ips = set()
 
+    logging.info(f"[DEBUG] Total connections received: {len(connections)}")
+
     for conn in connections:
         raddr = conn.raddr if conn.raddr else None
         if raddr:
-            ip = raddr.ip
+            ip = conn.raddr.split(':')[0]
+            logging.info(f"[DEBUG] Outbound connection to: {ip}")
             if ip not in known_ips:
                 new_ips.add(ip)
                 logging.info(f"[!] New outbound IP detected: {ip} at {datetime.now()}")
