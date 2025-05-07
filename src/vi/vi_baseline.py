@@ -29,9 +29,8 @@ def update_baseline(connections):
     logging.info(f"[DEBUG] Total connections received: {len(connections)}")
 
     for conn in connections:
-        raddr = conn.raddr if conn.raddr else None
-        if raddr:
-            ip = conn.raddr.split(':')[0]
+        ip = getattr(conn, "remote_ip", None)
+        if ip:
             logging.info(f"[DEBUG] Outbound connection to: {ip}")
             if ip not in known_ips:
                 new_ips.add(ip)
