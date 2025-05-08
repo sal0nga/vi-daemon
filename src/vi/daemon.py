@@ -7,7 +7,8 @@ from datetime import datetime
 
 from vi.system import log_boot_time, log_active_processes
 from vi.net_monitor import get_active_connections
-from vi.vi_baseline import update_baseline
+from vi.baseline import update_baseline, load_linkage
+from vi import tracker
 
 log_file = Path.home() / '.vi' / 'logs' / 'vi.log'
 log_file.parent.mkdir(parents=True, exist_ok=True)
@@ -20,11 +21,18 @@ logging.basicConfig(
 
 def main():
     log_boot_time()
+    known_links = load_linkage()
     while True:
         logging.info('--- Snapshot ---')
         log_active_processes()
         connections = get_active_connections()
-        update_baseline(connections)
+        
+        # Logs new IPs
+        update_baseline(connections) 
+
+        # Links PID to IP
+        tracker.track_connections(connections, known_links)
+        
         time.sleep(10)
 
 if __name__ == '__main__':
