@@ -3,8 +3,8 @@
 # Vi daemon
 
 import sys, os
-# Ensure the src directory is on Python's module search path
-src_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+src_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) # Ensure the src directory is on Python's module search path
 if src_dir not in sys.path:
     sys.path.insert(0, src_dir)
 
@@ -16,6 +16,12 @@ from vi.net_monitor import get_active_connections
 from vi.baseline import update_baseline, load_linkage
 from vi import tracker
 from vi.storage import init_db, insert_connections
+
+try: 
+    from vi.config import config
+except Exception as e:
+    logging.error("Configuration error: %s", e)
+    sys.exit(1)
 
 log_file = Path.home() / '.vi' / 'logs' / 'vi.log'
 log_file.parent.mkdir(parents=True, exist_ok=True)
@@ -39,7 +45,8 @@ def main():
             connections = get_active_connections()
 
             # Persist snapshot of current connections to SQLite
-            insert_connections(connections)
+            if config.enable_sqlite_logging:
+                insert_connections(connections)
 
             # Logs new IPs
             update_baseline(connections)
@@ -47,7 +54,7 @@ def main():
             # Links PID to IP
             tracker.track_connections(connections, known_links)
 
-            time.sleep(10)
+            time.sleep(config.scan_interval)
     except Exception:
         logging.exception('[DAEMON] Unhandled exception—exiting for launchd to restart.')
         sys.exit(1)

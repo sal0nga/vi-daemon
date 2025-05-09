@@ -1,0 +1,11 @@
+# Vi configuration settings
+
+# Seconds between each snapshot
+scan_interval = 10
+
+# Enable or disable SQLite logging
+enable_sqlite_logging = true
+
+[alert_thresholds]
+# Maximum new outbound IPs allowed per minute before alerting
+new_ips_per_minute = 5
