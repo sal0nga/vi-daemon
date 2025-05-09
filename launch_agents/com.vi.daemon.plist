@@ -2,22 +2,35 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <!-- Unique identifier for this launchd agent -->
     <key>Label</key>
-    <string>com.vi.daemon</string>
+        <string>com.vi.daemon</string>
 
+    <!-- Full path to the Python interpreter and the Vi daemon script -->
     <key>ProgramArguments</key>
     <array>
         <string>/Users/keenan_salonga/.vi/.venv/bin/python</string>
-        <string>/Users/keenan_salonga/.vi/src/vi_daemon.py</string>
+        <string>/Users/keenan_salonga/.vi/src/vi/daemon.py</string>
     </array>
 
+    <!-- Ensure logs and relative paths resolve under .vi directory -->
+    <key>WorkingDirectory</key>
+        <string>/Users/keenan_salonga/.vi</string>
+
+    <!-- Start the agent automatically when loaded (at login or boot) -->
     <key>RunAtLoad</key>
-    <true/>
+        <true/>
 
+    <!-- Restart on exit/crash -->
+    <key>KeepAlive</key>
+        <true/>
+    
+    <!-- File path for capturing the daemon’s standard output logs -->
     <key>StandardOutPath</key>
-    <string>/Users/keenan_salonga/.vi/logs/vi.stdout.log</string>
+        <string>/Users/keenan_salonga/.vi/logs/vi.stdout.log</string>
 
+    <!-- File path for capturing the daemon’s standard error logs -->
     <key>StandardErrorPath</key>
-    <string>/Users/keenan_salonga/.vi/logs/vi.stderr.log</string>
+        <string>/Users/keenan_salonga/.vi/logs/vi.stderr.log</string>
 </dict>
 </plist>

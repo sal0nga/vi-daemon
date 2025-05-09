@@ -1,10 +1,12 @@
 # src/vi/net_monitor.py
 
+# Discovers all current TCP/UDP connections w/ lsof
 import subprocess
 import re
 import logging
-from vi.models import Connection
+from models import Connection
 
+# Extracts local/remote IPs & ports, PID, process name & user
 def get_active_connections():
     connections = []
 
