@@ -13,8 +13,13 @@ class Config:
         self.alert_thresholds = {
             'new_ips_per_minute': 5
         }
-
-        self._validate()
+        
+        # Intel defaults
+        self.intel = {
+            'abuseipdb_api_key': None,
+            'cache_ttl': 86400,
+            'threshold_score': 50
+        }
 
         # Load overrides from settings.toml
         cfg_path = Path.home() / '.vi' / 'config' / 'settings.toml'
@@ -29,6 +34,15 @@ class Config:
             self.alert_thresholds['new_ips_per_minute'] = int(
                 at.get('new_ips_per_minute', self.alert_thresholds['new_ips_per_minute'])
             )
+
+            intel_cfg = data.get('intel', {})
+            # Intel overrides from settings.toml
+            intel_cfg = data.get('intel', {})
+            self.intel['abuseipdb_api_key'] = intel_cfg.get('abuseipdb_api_key', self.intel['abuseipdb_api_key'])
+            self.intel['cache_ttl'] = int(intel_cfg.get('cache_ttl', self.intel['cache_ttl']))
+            self.intel['threshold_score'] = int(intel_cfg.get('threshold_score', self.intel['threshold_score']))
+        # Validate loaded configuration
+        self._validate()
     
     def _validate(self):
         if not isinstance(self.scan_interval, int) or self.scan_interval <= 0:
@@ -38,5 +52,10 @@ class Config:
         ip_th = self.alert_thresholds.get('new_ips_per_minute')
         if not isinstance(ip_th, int) or ip_th < 0:
             raise ValueError(f"alert_thresholds.new_ips_per_minute must be a non‐negative integer (got {ip_th!r})")
+        # Validate intel settings
+        if not isinstance(self.intel['cache_ttl'], int) or self.intel['cache_ttl'] <= 0:
+            raise ValueError(f"intel.cache_ttl must be a positive integer (got {self.intel['cache_ttl']!r})")
+        if not isinstance(self.intel['threshold_score'], int) or not (0 <= self.intel['threshold_score'] <= 100):
+            raise ValueError(f"intel.threshold_score must be between 0 and 100 (got {self.intel['threshold_score']!r})")
 # Singleton instance
 config = Config()

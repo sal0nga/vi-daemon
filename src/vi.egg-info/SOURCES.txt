@@ -2,8 +2,11 @@ pyproject.toml
 setup.py
 vi/__init__.py
 vi/baseline.py
+vi/config.py
 vi/daemon.py
+vi/intel.py
 vi/net_monitor.py
+vi/storage.py
 vi/system.py
 vi/tracker.py
 vi.egg-info/PKG-INFO

@@ -3,8 +3,14 @@
 # Vi daemon
 
 import sys, os
+import warnings
+from urllib3.exceptions import NotOpenSSLWarning
 
-src_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) # Ensure the src directory is on Python's module search path
+# Suppress urllib3 LibreSSL compatibility warnings
+warnings.filterwarnings("ignore", category=NotOpenSSLWarning)
+
+# Ensure the src directory is on Python's module search path
+src_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if src_dir not in sys.path:
     sys.path.insert(0, src_dir)
 
@@ -16,6 +22,7 @@ from vi.net_monitor import get_active_connections
 from vi.baseline import update_baseline, load_linkage
 from vi import tracker
 from vi.storage import init_db, insert_connections
+from vi.intel import init_intel_db, get_ip_reputation
 
 try: 
     from vi.config import config
@@ -38,11 +45,21 @@ def main():
     known_links = load_linkage()
     # Initialize the SQLite database for connection logging
     init_db()
+    # Initialize the AbuseIPDB cache
+    init_intel_db()
     try:
         while True:
             logging.info('--- Snapshot ---')
             log_active_processes()
             connections = get_active_connections()
+
+            # Enrich each connection with IP reputation
+            for conn_obj in connections:
+                rep = get_ip_reputation(conn_obj.remote_ip)
+                conn_obj.reputation_score = rep['score']
+                conn_obj.is_malicious = rep['is_malicious']
+                if rep['is_malicious']:
+                    logging.warning(f"Malicious IP detected: {conn_obj.remote_ip} (score={rep['score']})")
 
             # Persist snapshot of current connections to SQLite
             if config.enable_sqlite_logging:

@@ -1,0 +1,19 @@
+# Vi configuration settings
+
+# Seconds between each snapshot
+scan_interval = 10
+
+# Enable or disable SQLite logging
+enable_sqlite_logging = true
+
+[alert_thresholds]
+# Maximum new outbound IPs allowed per minute before alerting
+new_ips_per_minute = 5
+
+[intel]
+# Your AbuseIPDB API key (sign up at https://www.abuseipdb.com/)
+abuseipdb_api_key = "6832bd96d8b0c773d96188ff6b761cfe08044466e71c7da9d76cf7a825f2e4bd674b6a6e8bb03320"
+# How long (in seconds) to cache each IP’s verdict
+cache_ttl = 86400
+# Score threshold (0–100) above which we consider an IP “malicious”
+threshold_score = 50
