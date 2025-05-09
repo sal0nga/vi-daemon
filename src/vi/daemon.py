@@ -23,6 +23,7 @@ from vi.baseline import update_baseline, load_linkage
 from vi import tracker
 from vi.storage import init_db, insert_connections
 from vi.intel import init_intel_db, get_ip_reputation
+from vi.behavior import init_behavior_db, check_behavior
 
 try: 
     from vi.config import config
@@ -43,10 +44,14 @@ logging.basicConfig(
 def main():
     log_boot_time()
     known_links = load_linkage()
+    
     # Initialize the SQLite database for connection logging
     init_db()
     # Initialize the AbuseIPDB cache
     init_intel_db()
+    # Initialize the behavioral baseline database
+    init_behavior_db()
+
     try:
         while True:
             logging.info('--- Snapshot ---')
@@ -60,6 +65,14 @@ def main():
                 conn_obj.is_malicious = rep['is_malicious']
                 if rep['is_malicious']:
                     logging.warning(f"Malicious IP detected: {conn_obj.remote_ip} (score={rep['score']})")
+
+            # Detect behavioral anomalies
+            anomalies = check_behavior(connections)
+            for co, anomaly in anomalies:
+                logging.warning(
+                    f"Behavioral anomaly [{anomaly}] detected: "
+                    f"{co.process_name} (PID {co.pid}) → remote port {co.remote_port}"
+                )
 
             # Persist snapshot of current connections to SQLite
             if config.enable_sqlite_logging:
