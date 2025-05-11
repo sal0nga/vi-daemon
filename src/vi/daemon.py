@@ -24,6 +24,7 @@ from vi import tracker
 from vi.storage import init_db, insert_connections
 from vi.intel import init_intel_db, get_ip_reputation
 from vi.behavior import init_behavior_db, check_behavior
+from vi.alerts import init_alerts_db, record_alert, send_notification
 
 try: 
     from vi.config import config
@@ -51,6 +52,8 @@ def main():
     init_intel_db()
     # Initialize the behavioral baseline database
     init_behavior_db()
+    # Initialize the alerts database
+    init_alerts_db()
 
     try:
         while True:
@@ -69,6 +72,14 @@ def main():
             # Detect behavioral anomalies
             anomalies = check_behavior(connections)
             for co, anomaly in anomalies:
+                # persist to alerts.sqlite
+                record_alert(co, anomaly, severity='high')
+                # Desktop notification
+                send_notification(
+                    "Vi Alert",
+                    f"{anomaly} – {co.process_name} (PID {co.pid}) on port {co.remote_port}"
+                )
+                
                 logging.warning(
                     f"Behavioral anomaly [{anomaly}] detected: "
                     f"{co.process_name} (PID {co.pid}) → remote port {co.remote_port}"

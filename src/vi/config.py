@@ -21,6 +21,13 @@ class Config:
             'threshold_score': 50
         }
 
+        # Notification defaults
+        self.notifications = {
+            'enable_desktop': True,
+            'notifier': 'terminal-notifier',
+            'min_severity': 'medium'
+        }
+
         # Load overrides from settings.toml
         cfg_path = Path.home() / '.vi' / 'config' / 'settings.toml'
         if cfg_path.exists():
@@ -35,12 +42,24 @@ class Config:
                 at.get('new_ips_per_minute', self.alert_thresholds['new_ips_per_minute'])
             )
 
-            intel_cfg = data.get('intel', {})
             # Intel overrides from settings.toml
             intel_cfg = data.get('intel', {})
             self.intel['abuseipdb_api_key'] = intel_cfg.get('abuseipdb_api_key', self.intel['abuseipdb_api_key'])
             self.intel['cache_ttl'] = int(intel_cfg.get('cache_ttl', self.intel['cache_ttl']))
             self.intel['threshold_score'] = int(intel_cfg.get('threshold_score', self.intel['threshold_score']))
+
+            # Notification overrides from settings.toml
+            notif_cfg = data.get('notifications', {})
+            self.notifications['enable_desktop'] = bool(
+                notif_cfg.get('enable_desktop', self.notifications['enable_desktop'])
+            )
+            self.notifications['notifier'] = notif_cfg.get(
+                'notifier', self.notifications['notifier']
+            )
+            self.notifications['min_severity'] = notif_cfg.get(
+                'min_severity', self.notifications['min_severity']
+            )
+        
         # Validate loaded configuration
         self._validate()
     
@@ -52,10 +71,20 @@ class Config:
         ip_th = self.alert_thresholds.get('new_ips_per_minute')
         if not isinstance(ip_th, int) or ip_th < 0:
             raise ValueError(f"alert_thresholds.new_ips_per_minute must be a non‐negative integer (got {ip_th!r})")
+        
         # Validate intel settings
         if not isinstance(self.intel['cache_ttl'], int) or self.intel['cache_ttl'] <= 0:
             raise ValueError(f"intel.cache_ttl must be a positive integer (got {self.intel['cache_ttl']!r})")
         if not isinstance(self.intel['threshold_score'], int) or not (0 <= self.intel['threshold_score'] <= 100):
             raise ValueError(f"intel.threshold_score must be between 0 and 100 (got {self.intel['threshold_score']!r})")
+        
+        # Validate notifications settings
+        if not isinstance(self.notifications['enable_desktop'], bool):
+            raise ValueError(f"notifications.enable_desktop must be true/false (got {self.notifications['enable_desktop']!r})")
+        if not isinstance(self.notifications['notifier'], str):
+            raise ValueError(f"notifications.notifier must be a string (got {self.notifications['notifier']!r})")
+        if self.notifications['min_severity'] not in {'low', 'medium', 'high'}:
+            raise ValueError(f"notifications.min_severity must be 'low', 'medium', or 'high' (got {self.notifications['min_severity']!r})")
+
 # Singleton instance
 config = Config()

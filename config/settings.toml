@@ -17,3 +17,15 @@ abuseipdb_api_key = "6832bd96d8b0c773d96188ff6b761cfe08044466e71c7da9d76cf7a825f
 cache_ttl = 86400
 # Score threshold (0–100) above which we consider an IP “malicious”
 threshold_score = 50
+
+[notifications]
+# Turn desktop pop-ups on/off
+enable_desktop = true
+
+# Which notifier binary to invoke
+# (we installed terminal-notifier via Homebrew)
+notifier = "terminal-notifier"
+
+# Minimum severity level that should trigger a pop-up
+# (e.g. "low", "medium", "high")
+min_severity = "high"
