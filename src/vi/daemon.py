@@ -72,18 +72,21 @@ def main():
             # Detect behavioral anomalies
             anomalies = check_behavior(connections)
             for co, anomaly in anomalies:
-                # persist to alerts.sqlite
-                record_alert(co, anomaly, severity='high')
-                # Desktop notification
-                send_notification(
-                    "Vi Alert",
-                    f"{anomaly} – {co.process_name} (PID {co.pid}) on port {co.remote_port}"
-                )
-                
                 logging.warning(
                     f"Behavioral anomaly [{anomaly}] detected: "
                     f"{co.process_name} (PID {co.pid}) → remote port {co.remote_port}"
                 )
+                
+                # Record to alerts DB
+                record_alert(co, anomaly, severity='high')
+                
+                # Send desktop notification
+                send_notification(
+                    "Vi Alert",
+                    f"{anomaly} – {co.process_name} (PID {co.pid}) on port {co.remote_port}",
+                    severity='high'
+                )
+                
 
             # Persist snapshot of current connections to SQLite
             if config.enable_sqlite_logging:
