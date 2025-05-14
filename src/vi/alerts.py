@@ -3,6 +3,7 @@ import subprocess
 from pathlib import Path
 from datetime import datetime
 from vi.config import config
+import logging
 
 # Path to the SQLite database for alerts
 DB_PATH = Path.home() / '.vi' / 'logs' / 'alerts.sqlite'
@@ -48,12 +49,17 @@ def record_alert(conn_obj, anomaly_type, severity='medium'):
 
 def send_notification(title: str, message: str, severity: str = 'medium'):
     # Respect notification settings from config
+    # Debug: log notification invocation
+    logging.info(f"send_notification called with severity={severity}, config={config.notifications!r}")
     notif_cfg = config.notifications
     if not notif_cfg['enable_desktop']:
+        logging.info("Notification skipped: desktop notifications disabled in config")
         return
     if severity != notif_cfg['min_severity']:
+        logging.info(f"Notification skipped: severity '{severity}' does not match min_severity '{notif_cfg['min_severity']}'")
         return
     notifier = notif_cfg['notifier']
+    logging.info(f"Dispatching notification via '{notifier}'")
     # Fire a macOS banner notification via terminal-notifier
     subprocess.run([
         notifier,

@@ -19,13 +19,7 @@ cache_ttl = 86400
 threshold_score = 50
 
 [notifications]
-# Turn desktop pop-ups on/off
 enable_desktop = true
-
-# Which notifier binary to invoke
-# (we installed terminal-notifier via Homebrew)
 notifier = "terminal-notifier"
-
-# Minimum severity level that should trigger a pop-up
 # (e.g. "low", "medium", "high")
-min_severity = "high"
+min_severity = "medium"

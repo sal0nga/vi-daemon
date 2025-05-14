@@ -68,6 +68,13 @@ def main():
                 conn_obj.is_malicious = rep['is_malicious']
                 if rep['is_malicious']:
                     logging.warning(f"Malicious IP detected: {conn_obj.remote_ip} (score={rep['score']})")
+                    # Record and notify about malicious IP
+                    record_alert(conn_obj, 'malicious_ip', severity='high')
+                    send_notification(
+                        "Vi Alert",
+                        f"Malicious IP detected: {conn_obj.remote_ip} (score={rep['score']})",
+                        severity='high'
+                    )
 
             # Detect behavioral anomalies
             anomalies = check_behavior(connections)
