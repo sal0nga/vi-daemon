@@ -42,6 +42,18 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 
+from datetime import datetime
+
+# Map anomaly types to severity levels for notifications
+ANOMALY_SEVERITY = {
+    'new_process': 'low',
+    'new_process_port': 'medium',
+    'malicious_ip': 'high'
+}
+
+# Session-level alert deduplication: tracks when each anomaly was last alerted
+_ALERT_HISTORY = {}
+
 def main():
     log_boot_time()
     known_links = load_linkage()
@@ -68,31 +80,36 @@ def main():
                 conn_obj.is_malicious = rep['is_malicious']
                 
                 if rep['is_malicious']:
+                    severity = ANOMALY_SEVERITY.get('malicious_ip', 'high')
                     logging.warning(f"Malicious IP detected: {conn_obj.remote_ip} (score={rep['score']})")
-                    record_alert(conn_obj, 'malicious_ip', severity='high')
-                    send_notification(
-                        "Vi Alert",
-                        f"Malicious IP detected: {conn_obj.remote_ip} (score={rep['score']})",
-                        severity='high'
-                    )
+                    key = ('malicious_ip', conn_obj.remote_ip)
+                    if key not in _ALERT_HISTORY:
+                        record_alert(conn_obj, 'malicious_ip', severity=severity)
+                        send_notification(
+                            "Vi Alert",
+                            f"Malicious IP detected: {conn_obj.remote_ip} (score={rep['score']})",
+                            severity=severity
+                        )
+                        _ALERT_HISTORY[key] = datetime.now()
 
             # Detect behavioral anomalies
             anomalies = check_behavior(connections)
             for co, anomaly in anomalies:
+                severity = ANOMALY_SEVERITY.get(anomaly, 'medium')
                 logging.warning(
                     f"Behavioral anomaly [{anomaly}] detected: "
                     f"{co.process_name} (PID {co.pid}) → remote port {co.remote_port}"
                 )
-                
-                # Record to alerts DB
-                record_alert(co, anomaly, severity='high')
-                
-                # Send desktop notification
-                send_notification(
-                    "Vi Alert",
-                    f"{anomaly} – {co.process_name} (PID {co.pid}) on port {co.remote_port}",
-                    severity='high'
-                )
+                key = (anomaly, co.process_name, co.remote_port)
+                if key not in _ALERT_HISTORY:
+                    record_alert(co, anomaly, severity=severity)
+                    send_notification(
+                        "Vi Alert",
+                        f"Behavioral anomaly [{anomaly}] detected: "
+                        f"{co.process_name} (PID {co.pid}) → remote port {co.remote_port}",
+                        severity=severity
+                    )
+                    _ALERT_HISTORY[key] = datetime.now()
                 
 
             # Persist snapshot of current connections to SQLite
