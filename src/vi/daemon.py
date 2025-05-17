@@ -95,6 +95,12 @@ def main():
             # Detect behavioral anomalies
             anomalies = check_behavior(connections)
             for co, anomaly in anomalies:
+                # Skip “new process” alerts if disabled in config
+                if anomaly == 'new_process' and not config.behavior['alert_new_process']:
+                    continue
+                # Skip “new port” alerts if disabled in config
+                if anomaly == 'new_process_port' and not config.behavior['alert_new_process_port']:
+                    continue
                 severity = ANOMALY_SEVERITY.get(anomaly, 'medium')
                 logging.warning(
                     f"Behavioral anomaly [{anomaly}] detected: "

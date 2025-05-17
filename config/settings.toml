@@ -23,3 +23,10 @@ enable_desktop = true
 notifier = "/opt/homebrew/bin/terminal-notifier"
 # (e.g. "low", "medium", "high")
 min_severity = "high"
+
+
+[behavior]
+# Turn on/off “new process seen” alerts
+alert_new_process = true
+# Turn on/off “new port for known process” alerts
+alert_new_process_port = true

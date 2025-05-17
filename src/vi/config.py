@@ -28,6 +28,12 @@ class Config:
             'min_severity': 'medium'
         }
 
+        # Behavior toggles defaults
+        self.behavior = {
+            'alert_new_process': True,
+            'alert_new_process_port': True
+        }
+
         # Load overrides from settings.toml
         cfg_path = Path.home() / '.vi' / 'config' / 'settings.toml'
         if cfg_path.exists():
@@ -59,6 +65,15 @@ class Config:
             self.notifications['min_severity'] = notif_cfg.get(
                 'min_severity', self.notifications['min_severity']
             )
+
+            # Behavior toggles overrides from settings.toml
+            beh = data.get('behavior', {})
+            self.behavior['alert_new_process'] = bool(
+                beh.get('alert_new_process', self.behavior['alert_new_process'])
+            )
+            self.behavior['alert_new_process_port'] = bool(
+                beh.get('alert_new_process_port', self.behavior['alert_new_process_port'])
+            )
         
         # Validate loaded configuration
         self._validate()
@@ -85,6 +100,12 @@ class Config:
             raise ValueError(f"notifications.notifier must be a string (got {self.notifications['notifier']!r})")
         if self.notifications['min_severity'] not in {'low', 'medium', 'high'}:
             raise ValueError(f"notifications.min_severity must be 'low', 'medium', or 'high' (got {self.notifications['min_severity']!r})")
+
+        # Validate behavior toggles
+        if not isinstance(self.behavior['alert_new_process'], bool):
+            raise ValueError(f"behavior.alert_new_process must be true/false (got {self.behavior['alert_new_process']!r})")
+        if not isinstance(self.behavior['alert_new_process_port'], bool):
+            raise ValueError(f"behavior.alert_new_process_port must be true/false (got {self.behavior['alert_new_process_port']!r})")
 
 # Singleton instance
 config = Config()
