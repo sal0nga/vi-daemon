@@ -66,9 +66,9 @@ def main():
                 rep = get_ip_reputation(conn_obj.remote_ip)
                 conn_obj.reputation_score = rep['score']
                 conn_obj.is_malicious = rep['is_malicious']
+                
                 if rep['is_malicious']:
                     logging.warning(f"Malicious IP detected: {conn_obj.remote_ip} (score={rep['score']})")
-                    # Record and notify about malicious IP
                     record_alert(conn_obj, 'malicious_ip', severity='high')
                     send_notification(
                         "Vi Alert",

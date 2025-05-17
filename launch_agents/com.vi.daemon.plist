@@ -24,6 +24,12 @@
     <!-- Restart on exit/crash -->
     <key>KeepAlive</key>
         <true/>
+    <!-- Environment variables for launchd, ensuring notifier binary is on PATH -->
+    <key>EnvironmentVariables</key>
+    <dict>
+      <key>PATH</key>
+      <string>/Users/keenan_salonga/.vi/.venv/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
     
     <!-- File path for capturing the daemon’s standard output logs -->
     <key>StandardOutPath</key>

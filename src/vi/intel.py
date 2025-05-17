@@ -48,11 +48,20 @@ def get_ip_reputation(ip: str) -> dict:
         data = resp.json()['data']
         score = data.get('abuseConfidenceScore', 0)
         is_mal = score >= config.intel['threshold_score']
+        # Debug: log threshold comparison
+        logging.info(
+            f"AbuseIPDB: IP={ip}, score={score}, threshold={config.intel['threshold_score']}, is_malicious={is_mal}"
+        )
     except Exception as e:
         logging.error(f"AbuseIPDB lookup failed for {ip}: {e}")
         # Fallback to safe defaults on error
         score = 0
-        is_mal = False
+        # Determine malicious flag based on configured threshold even on error
+        is_mal = score >= config.intel['threshold_score']
+        # Debug: log threshold comparison on error path
+        logging.info(
+            f"AbuseIPDB (error path): IP={ip}, score={score}, threshold={config.intel['threshold_score']}, is_malicious={is_mal}"
+        )
 
     # Update cache
     c.execute("""

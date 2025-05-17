@@ -20,6 +20,6 @@ threshold_score = 50
 
 [notifications]
 enable_desktop = true
-notifier = "terminal-notifier"
+notifier = "/opt/homebrew/bin/terminal-notifier"
 # (e.g. "low", "medium", "high")
-min_severity = "medium"
+min_severity = "high"
