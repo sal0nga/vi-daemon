@@ -25,12 +25,14 @@ def get_ip_reputation(ip: str) -> dict:
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     now = time.time()
-    # Check cache
-    c.execute("SELECT last_checked, score, is_malicious FROM ip_reputation WHERE ip=?", (ip,))
+    # Check cache (recompute malicious against current threshold)
+    c.execute("SELECT last_checked, score FROM ip_reputation WHERE ip=?", (ip,))
     row = c.fetchone()
     if row and (now - row[0]) < config.intel['cache_ttl']:
+        raw_score = row[1]
+        is_m = raw_score >= config.intel['threshold_score']
         conn.close()
-        return {'score': row[1], 'is_malicious': bool(row[2])}
+        return {'score': raw_score, 'is_malicious': is_m}
 
     # Query AbuseIPDB
     logging.info(f"Querying AbuseIPDB for {ip}")
@@ -65,9 +67,9 @@ def get_ip_reputation(ip: str) -> dict:
 
     # Update cache
     c.execute("""
-      REPLACE INTO ip_reputation (ip, last_checked, score, is_malicious)
-      VALUES (?, ?, ?, ?)
-    """, (ip, now, score, int(is_mal)))
+      REPLACE INTO ip_reputation (ip, last_checked, score)
+      VALUES (?, ?, ?)
+    """, (ip, now, score))
     conn.commit()
     conn.close()
     return {'score': score, 'is_malicious': is_mal}
