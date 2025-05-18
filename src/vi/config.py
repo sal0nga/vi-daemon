@@ -1,7 +1,4 @@
-try:
-    import tomllib  # Python 3.11+
-except ImportError:
-    import tomli as tomllib  # Older Python: needs `pip install tomli`
+import tomli as tomllib  # Older Python: needs `pip install tomli`
 
 from pathlib import Path
 
