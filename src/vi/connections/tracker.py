@@ -3,7 +3,7 @@
 # Maintains map of which PID contacted which IP
 import logging
 from datetime import datetime
-from vi.models import Connection
+from vi.connections import Connection
 
 # Iterates Connections and builds a key, alerts for new and known links
 def track_connections(connections: list[Connection], known_links: dict):

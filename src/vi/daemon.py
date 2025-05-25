@@ -20,8 +20,8 @@ from pathlib import Path
 from vi.system import log_boot_time, log_active_processes
 from vi.net_monitor import get_active_connections
 from vi.baseline import update_baseline, load_linkage
-from vi import tracker
-from vi.storage import init_db, insert_connections
+from vi.connections import tracker
+from vi.connections.storage import init_db, insert_connections
 from vi.intel import init_intel_db, get_ip_reputation
 from vi.behavior import init_behavior_db, check_behavior
 from vi.alerts import init_alerts_db, record_alert, send_notification

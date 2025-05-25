@@ -49,7 +49,7 @@ def save_linkage(data):
 
 # Logs outbound IPs & alerts for new ones
 def update_baseline(connections):
-    from vi import tracker
+    from src.vi.connections import tracker
 
     baseline = load_baseline()
     known_ips = set(baseline.get("known_ips", []))

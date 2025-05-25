@@ -4,7 +4,7 @@
 import subprocess
 import re
 import logging
-from models import Connection
+from connections import Connection
 
 # Extracts local/remote IPs & ports, PID, process name & user
 def get_active_connections():
