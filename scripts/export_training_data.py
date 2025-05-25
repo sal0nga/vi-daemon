@@ -14,7 +14,7 @@ def export_all_data():
         SELECT
             pid, user, process_name,
             local_port, remote_ip, remote_port,
-            cpu_percent, memory_rss, timestamp
+            cpu_percent, memory_rss, timestamp, status
         FROM connections
     ''')
     rows = cursor.fetchall()
@@ -25,13 +25,13 @@ def export_all_data():
         writer.writerow([
             'pid', 'user', 'process_name',
             'local_port', 'remote_ip', 'remote_port',
-            'cpu_percent', 'memory_rss_mb', 'timestamp', 'label'
+            'cpu_percent', 'memory_rss_mb', 'timestamp', 'status'
         ])
         for row in rows:
             row = list(row)
             if row[7] is not None:  # Convert memory_rss from bytes to MB
                 row[7] = round(row[7] / (1024 * 1024), 2)
-            writer.writerow(row + ['normal'])
+            writer.writerow(row)
 
 if __name__ == '__main__':
     export_all_data()

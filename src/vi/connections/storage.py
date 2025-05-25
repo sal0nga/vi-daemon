@@ -28,7 +28,8 @@ def init_db():
             remote_ip TEXT,
             remote_port INTEGER,
             cpu_percent REAL,
-            memory_rss INTEGER
+            memory_rss INTEGER,
+            status TEXT
         )
     ''')
     db_conn.commit()
@@ -47,8 +48,8 @@ def insert_connections(connections):
                 INSERT INTO connections (
                     timestamp, pid, user, process_name,
                     local_ip, local_port, remote_ip, remote_port,
-                    cpu_percent, memory_rss
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    cpu_percent, memory_rss, status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 conn_obj.timestamp,
                 conn_obj.pid,
@@ -59,7 +60,8 @@ def insert_connections(connections):
                 conn_obj.remote_ip,
                 conn_obj.remote_port,
                 conn_obj.cpu_percent,
-                conn_obj.memory_rss
+                conn_obj.memory_rss,
+                conn_obj.status
             ))
             print(f"Inserted connection: {conn_obj}")
         except Exception as e:

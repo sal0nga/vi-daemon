@@ -2,9 +2,29 @@
 import subprocess
 import re
 import logging
+import time
 from connections import Connection
 import psutil
-import time
+
+# Store previous cpu times for each pid
+_previous_cpu_times: dict[int, tuple[float, float]] = {}
+
+# Helper to calculate cpu percent for a process
+def calculate_cpu_percent(pid: int, current_time: float, current_cpu_time: float) -> float:
+    if pid not in _previous_cpu_times:
+        _previous_cpu_times[pid] = (current_cpu_time, current_time)
+        return 0.0
+
+    prev_cpu_time, prev_time = _previous_cpu_times[pid]
+    delta_cpu = current_cpu_time - prev_cpu_time
+    delta_time = current_time - prev_time
+
+    _previous_cpu_times[pid] = (current_cpu_time, current_time)
+
+    if delta_time <= 0:
+        return 0.0
+
+    return (delta_cpu / delta_time) * 100
 
 # Extracts local/remote IPs & ports, PID, process name & user
 def get_active_connections():
@@ -35,9 +55,10 @@ def get_active_connections():
             pid = int(pid)
             try:
                 proc = psutil.Process(pid)
-                proc.cpu_percent(interval=0.1)  # Prime the counter
-                time.sleep(0.1)
-                cpu = proc.cpu_percent(interval=None)  # Get actual usage
+                cpu_times = proc.cpu_times()
+                total_cpu_time = cpu_times.user + cpu_times.system
+                now = time.time()
+                cpu = calculate_cpu_percent(pid, now, total_cpu_time)
                 mem = proc.memory_info().rss
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 cpu = 0.0
