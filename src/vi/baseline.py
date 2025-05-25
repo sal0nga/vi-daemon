@@ -1,4 +1,3 @@
-
 # Manages Vi's baseline of seen outbound IPs and the persisted mapping of PID to IPs.
 
 import json
@@ -22,14 +21,15 @@ def load_baseline():
         logging.warning(f"[WARN] Failed to  load baseline: {e}")
     return {"known_ips": []}
 
-# Reads linkage.json, deserializes its keys into (PID, IP) tuples w/ timestamps 
+# Reads linkage.json, deserializes its keys into (PID, IP, TS) tuples w/ timestamps 
 def load_linkage():
     try:
         if LINKAGE_FILE.exists():
             with open(LINKAGE_FILE, "r") as f:
                 data = json.load(f)
                 return {
-                    tuple(key.split(":", 1)): value
+                    # Keys are formatted as "pid:ip:ts", split on last two colons to get tuple
+                    tuple(key.rsplit(":", 2)): value
                     for key, value in data.items()
                 }
     except Exception as e:
@@ -44,12 +44,15 @@ def save_baseline(data):
 # Serializes (PID, IP) w/ timestamps into linkage.json
 def save_linkage(data):
     with open(LINKAGE_FILE, "w") as f:
-        serializable_data = {f"{pid}:{ip}": timestamp.isoformat() if isinstance(timestamp, datetime) else timestamp for (pid, ip), timestamp in data.items()}
+        serializable_data = {
+            f"{pid}:{ip}:{ts}": timestamp.isoformat() if isinstance(timestamp, datetime) else timestamp
+            for (pid, ip, ts), timestamp in data.items()
+        }
         json.dump(serializable_data, f, indent=4)
 
 # Logs outbound IPs & alerts for new ones
 def update_baseline(connections):
-    from src.vi.connections import tracker
+    from vi.connections import tracker
 
     baseline = load_baseline()
     known_ips = set(baseline.get("known_ips", []))

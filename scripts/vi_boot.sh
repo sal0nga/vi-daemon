@@ -11,7 +11,7 @@ launchctl bootout gui/$(id -u) "$PLIST_PATH" 2>/dev/null
 echo "Bootstrapping Vi daemon..."
 launchctl bootstrap gui/$(id -u) "$PLIST_PATH"
 
-echo "Force restarting Vi daemon..."
-launchctl kickstart -k gui/$(id -u)/com.vi.daemon
+# echo "Force restarting Vi daemon..."
+# launchctl kickstart -k gui/$(id -u)/com.vi.daemon
 
 echo "Vi daemon restarted successfully."

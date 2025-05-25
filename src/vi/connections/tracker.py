@@ -11,7 +11,7 @@ def track_connections(connections: list[Connection], known_links: dict):
     logging.debug(f"[TRACKER] Known links before processing: {known_links}")
 
     for conn in connections:
-        key = (conn.pid, conn.remote_ip)
+        key = (conn.pid, conn.remote_ip, conn.timestamp)
 
         if key not in known_links:
             known_links[key] = datetime.now()
