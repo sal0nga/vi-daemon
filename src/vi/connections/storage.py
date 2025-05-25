@@ -3,6 +3,12 @@ from pathlib import Path
 from datetime import datetime
 import logging
 logger = logging.getLogger(__name__)
+if not logger.handlers:
+    handler = logging.FileHandler(Path.home() / '.vi' / 'logs' / 'vi.stdout.log')
+    formatter = logging.Formatter('[%(asctime)s] %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
 
 # Path to the SQLite database for connection logs
 DB_PATH = Path.home() / '.vi' / 'logs' / 'connections.sqlite'
@@ -32,7 +38,7 @@ def insert_connections(connections):
     """Insert a list of Connection objects into the connections table."""
     if not connections:
         return
-    logger.debug(f"[DB] Inserting {len(connections)} connection(s) into the database.")
+    # logger.debug(f"[DB] Inserting {len(connections)} connection(s) into the database.")
     db_conn = sqlite3.connect(DB_PATH)
     c = db_conn.cursor()
     for conn_obj in connections:

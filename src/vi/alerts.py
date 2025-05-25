@@ -1,9 +1,14 @@
+""" Alert management module for Vi. 
+Handles initialization of alert database, 
+recording of alerts, and notification dispatch.
+"""
+
 import sqlite3
 import subprocess
+import logging
 from pathlib import Path
 from datetime import datetime
 from vi.config import config
-import logging
 
 # Path to the SQLite database for alerts
 DB_PATH = Path.home() / '.vi' / 'logs' / 'alerts.sqlite'

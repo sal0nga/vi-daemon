@@ -1,5 +1,3 @@
-# src/vi/net_monitor.py
-
 # Discovers all current TCP/UDP connections w/ lsof
 import subprocess
 import re
@@ -37,7 +35,9 @@ def get_active_connections():
             pid = int(pid)
             try:
                 proc = psutil.Process(pid)
-                cpu = proc.cpu_percent(interval=0.1)
+                proc.cpu_percent(interval=0.1)  # Prime the counter
+                time.sleep(0.1)
+                cpu = proc.cpu_percent(interval=None)  # Get actual usage
                 mem = proc.memory_info().rss
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 cpu = 0.0

@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 
 # Ensure vi module is found when running under launchd
