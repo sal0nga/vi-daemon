@@ -14,7 +14,7 @@ def export_all_data():
         SELECT
             pid, user, process_name,
             local_port, remote_ip, remote_port,
-            cpu_percent, memory_rss, timestamp, status
+            cpu_percent, memory_rss, timestamp, status, tag
         FROM connections
     ''')
     rows = cursor.fetchall()
@@ -25,7 +25,7 @@ def export_all_data():
         writer.writerow([
             'pid', 'user', 'process_name',
             'local_port', 'remote_ip', 'remote_port',
-            'cpu_percent', 'memory_rss_mb', 'timestamp', 'status'
+            'cpu_percent', 'memory_rss_mb', 'timestamp', 'status', 'tag'
         ])
         for row in rows:
             row = list(row)

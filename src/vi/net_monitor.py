@@ -81,7 +81,8 @@ def get_active_connections():
                 status='ESTABLISHED',
                 cpu_percent=cpu,
                 memory_rss=mem,
-                timestamp=timestamp
+                timestamp=timestamp,
+                tag='untagged'
             )
 
             logging.info(f'     {conn}')

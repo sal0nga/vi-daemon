@@ -2,7 +2,7 @@ from datetime import datetime
 
 class Connection:
     def __init__(self, pid, process_name, user, local_ip, local_port, remote_ip, remote_port, status,
-                 cpu_percent=None, memory_rss=None, timestamp=None):
+                 cpu_percent=None, memory_rss=None, timestamp=None, tag=None):
         self.pid = int(pid)
         self.process_name = process_name
         self.user = user
@@ -14,8 +14,9 @@ class Connection:
         self.cpu_percent = cpu_percent
         self.memory_rss = memory_rss
         self.timestamp = timestamp or datetime.now().astimezone()
+        self.tag = tag
 
     def __repr__(self):
         return (f"<Connection {self.process_name} (PID {self.pid}) "
                 f"{self.local_ip}:{self.local_port} -> "
-                f"{self.remote_ip}:{self.remote_port} [{self.status}]>")
+                f"{self.remote_ip}:{self.remote_port} [{self.status}] Tag: {self.tag}>")

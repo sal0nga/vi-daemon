@@ -23,6 +23,7 @@ from vi.connections.storage import init_db, insert_connections
 from vi.net_monitor import get_active_connections
 from vi.system import log_boot_time, log_active_processes
 from vi.intel import init_intel_db, get_ip_reputation
+from ml.inference import predict_connection
 
 # Suppress urllib3 LibreSSL compatibility warnings
 warnings.filterwarnings("ignore", category=NotOpenSSLWarning)
@@ -42,7 +43,7 @@ _ALERT_HISTORY = {}
 def configure_logging():
     logging.basicConfig(
         filename=log_file,
-        level=logging.INFO,
+        level=logging.DEBUG,
         format='%(asctime)s [%(levelname)s] %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S'
     )
@@ -73,6 +74,10 @@ def main():
                 rep = get_ip_reputation(conn_obj.remote_ip)
                 conn_obj.reputation_score = rep['score']
                 conn_obj.is_malicious = rep['is_malicious']
+
+                # ML Predictions
+                conn_obj.tag = predict_connection(conn_obj.cpu_percent, conn_obj.memory_rss)
+                logging.debug(f"[ML] Tag={conn_obj.tag} | PID={conn_obj.pid}, CPU={conn_obj.cpu_percent}, MEM={conn_obj.memory_rss}")
 
                 if rep['is_malicious']:
                     severity = ANOMALY_SEVERITY['malicious_ip']

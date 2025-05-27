@@ -29,7 +29,8 @@ def init_db():
             remote_port INTEGER,
             cpu_percent REAL,
             memory_rss INTEGER,
-            status TEXT
+            status TEXT,
+            tag TEXT
         )
     ''')
     db_conn.commit()
@@ -39,17 +40,18 @@ def insert_connections(connections):
     """Insert a list of Connection objects into the connections table."""
     if not connections:
         return
-    # logger.debug(f"[DB] Inserting {len(connections)} connection(s) into the database.")
+    logger.debug(f"[DB] Inserting {len(connections)} connection(s) into the database.")
     db_conn = sqlite3.connect(DB_PATH)
     c = db_conn.cursor()
     for conn_obj in connections:
         try:
+            logger.debug(f"Inserting connection PID {conn_obj.pid} - CPU: {conn_obj.cpu_percent}%, Mem: {conn_obj.memory_rss} MB, Tag: {conn_obj.tag}")
             c.execute('''
                 INSERT INTO connections (
                     timestamp, pid, user, process_name,
                     local_ip, local_port, remote_ip, remote_port,
-                    cpu_percent, memory_rss, status
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    cpu_percent, memory_rss, status, tag
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 conn_obj.timestamp,
                 conn_obj.pid,
@@ -61,7 +63,8 @@ def insert_connections(connections):
                 conn_obj.remote_port,
                 conn_obj.cpu_percent,
                 conn_obj.memory_rss,
-                conn_obj.status
+                conn_obj.status,
+                conn_obj.tag
             ))
             print(f"Inserted connection: {conn_obj}")
         except Exception as e:
