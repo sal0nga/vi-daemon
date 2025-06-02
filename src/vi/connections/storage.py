@@ -29,6 +29,9 @@ def init_db():
             remote_port INTEGER,
             cpu_percent REAL,
             memory_rss INTEGER,
+            connection_count INTEGER,
+            duration_seconds REAL,
+            is_remote_ipv6 INTEGER,
             status TEXT,
             tag TEXT
         )
@@ -50,8 +53,8 @@ def insert_connections(connections):
                 INSERT INTO connections (
                     timestamp, pid, user, process_name,
                     local_ip, local_port, remote_ip, remote_port,
-                    cpu_percent, memory_rss, status, tag
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    cpu_percent, memory_rss, connection_count, duration_seconds, is_remote_ipv6, status, tag
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 conn_obj.timestamp,
                 conn_obj.pid,
@@ -63,6 +66,9 @@ def insert_connections(connections):
                 conn_obj.remote_port,
                 conn_obj.cpu_percent,
                 conn_obj.memory_rss,
+                conn_obj.connection_count,
+                conn_obj.duration_seconds,
+                conn_obj.is_remote_ipv6,
                 conn_obj.status,
                 conn_obj.tag
             ))

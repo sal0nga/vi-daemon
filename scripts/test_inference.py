@@ -14,8 +14,18 @@ conn = Connection(
     cpu_percent=12.7,
     memory_rss=104857600,  # 100 MB
     timestamp=datetime.now(),
-    status="ESTABLISHED"
+    status="ESTABLISHED",
+    connection_count=1,
+    duration_seconds=0.0,
+    is_remote_ipv6=0
 )
 
-tag = predict_connection(conn.cpu_percent, conn.memory_rss)
+memory_rss_mb = conn.memory_rss / (1024 * 1024) if conn.memory_rss is not None else 0.0
+tag = predict_connection(
+    conn.cpu_percent,
+    memory_rss_mb,
+    conn.connection_count,
+    conn.duration_seconds,
+    conn.is_remote_ipv6
+)
 print(f"Inference result: {tag}")

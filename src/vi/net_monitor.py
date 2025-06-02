@@ -70,6 +70,7 @@ def get_active_connections():
 
             timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
 
+            is_ipv6 = 1 if ':' in r_ip else 0
             conn = Connection(
                 pid=pid,
                 process_name=name,
@@ -82,7 +83,10 @@ def get_active_connections():
                 cpu_percent=cpu,
                 memory_rss=mem,
                 timestamp=timestamp,
-                tag='untagged'
+                tag='untagged',
+                connection_count=None,
+                duration_seconds=None,
+                is_remote_ipv6=is_ipv6
             )
 
             logging.info(f'     {conn}')
@@ -90,6 +94,13 @@ def get_active_connections():
 
     except Exception as e:
         logging.warning(f"[WARN] Failed to read connections via lsof: {e}")
+
+    # Compute connection_count for each Connection object
+    pid_counts: dict[int, int] = {}
+    for c in connections:
+        pid_counts[c.pid] = pid_counts.get(c.pid, 0) + 1
+    for c in connections:
+        c.connection_count = pid_counts.get(c.pid, 0)
 
     logging.info(f"[DEBUG] Total established connections: {len(connections)}")
     return connections

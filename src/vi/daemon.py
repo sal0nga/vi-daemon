@@ -76,8 +76,19 @@ def main():
                 conn_obj.is_malicious = rep['is_malicious']
 
                 # ML Predictions
-                conn_obj.tag = predict_connection(conn_obj.cpu_percent, conn_obj.memory_rss)
-                logging.debug(f"[ML] Tag={conn_obj.tag} | PID={conn_obj.pid}, CPU={conn_obj.cpu_percent}, MEM={conn_obj.memory_rss}")
+                memory_rss_mb = conn_obj.memory_rss / (1024 * 1024)
+                conn_obj.tag = predict_connection(
+                    conn_obj.cpu_percent,
+                    memory_rss_mb,
+                    conn_obj.connection_count,
+                    conn_obj.duration_seconds,
+                    conn_obj.is_remote_ipv6
+                )
+                logging.debug(
+                    f"[ML] Tag={conn_obj.tag} | PID={conn_obj.pid}, CPU={conn_obj.cpu_percent}, "
+                    f"MEM_MB={memory_rss_mb:.2f}, ConnCount={conn_obj.connection_count}, "
+                    f"Duration={conn_obj.duration_seconds}, IPv6={conn_obj.is_remote_ipv6}"
+                )
 
                 if rep['is_malicious']:
                     severity = ANOMALY_SEVERITY['malicious_ip']
