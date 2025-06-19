@@ -1,10 +1,15 @@
 # Discovers all current TCP/UDP connections w/ lsof
-import subprocess
-import re
+import json
 import logging
+import re
+import subprocess
 import time
-from connections import Connection
+from datetime import datetime
+from pathlib import Path
+
 import psutil
+
+from connections import Connection
 
 # Store previous cpu times for each pid
 _previous_cpu_times: dict[int, tuple[float, float]] = {}
@@ -39,6 +44,7 @@ def get_active_connections():
         )
 
         lines = result.stdout.strip().split('\n')
+        snapshot_time = datetime.now()
         for line in lines:
             if 'ESTABLISHED' not in line:
                 continue
@@ -68,7 +74,22 @@ def get_active_connections():
             l_ip, l_port = local.rsplit(':', 1)
             r_ip, r_port = remote.rsplit(':', 1)
 
-            timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+            timestamp = snapshot_time.strftime('%Y-%m-%d %H:%M:%S')
+
+            LINKAGE_FILE = Path.home() / ".vi" / "config" / "linkage.json"
+            try:
+                if LINKAGE_FILE.exists():
+                    with open(LINKAGE_FILE, "r") as f:
+                        data = json.load(f)
+                        known_links = {
+                            tuple(key.rsplit(":", 2)): value
+                            for key, value in data.items()
+                        }
+                else:
+                    known_links = {}
+            except Exception as e:
+                logging.warning(f"[WARN] Failed to load linkage data: {e}")
+                known_links = {}
 
             is_ipv6 = 1 if ':' in r_ip else 0
             conn = Connection(
@@ -88,6 +109,19 @@ def get_active_connections():
                 duration_seconds=None,
                 is_remote_ipv6=is_ipv6
             )
+
+            link_key = (conn.pid, conn.remote_ip, snapshot_time.date().isoformat())
+            first_seen = known_links.get(link_key)
+
+            try:
+                if first_seen:
+                    first_seen_time = datetime.fromisoformat(first_seen)
+                    conn.duration_seconds = (snapshot_time - first_seen_time).total_seconds()
+                else:
+                    conn.duration_seconds = 0.0
+            except Exception as e:
+                logging.warning(f"[WARN] Failed to calculate duration for PID {conn.pid}: {e}")
+                conn.duration_seconds = 0.0
 
             logging.info(f'     {conn}')
             connections.append(conn)

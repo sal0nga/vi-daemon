@@ -9,6 +9,7 @@ sys.path.append(os.path.expanduser("~/.vi/src"))
 import sys, os, time, logging, warnings
 from pathlib import Path
 from datetime import datetime
+from typing import Optional, Tuple
 
 # Third-Party
 from urllib3.exceptions import NotOpenSSLWarning
@@ -60,6 +61,10 @@ def main():
     known_links = load_linkage()
     initialize_databases()
 
+    from collections import defaultdict
+
+    _start_times: dict[Tuple[int, str], Optional[datetime]] = defaultdict(lambda: None)
+
     try:
         while True:
             logging.info('--- Snapshot ---')
@@ -69,6 +74,14 @@ def main():
 
             for conn in connections:
                 conn.timestamp = snapshot_time
+                key = (conn.pid, conn.remote_ip)
+                if key not in _start_times or _start_times[key] is None:
+                    _start_times[key] = conn.timestamp
+                start_time = _start_times.get(key)
+                if start_time is not None:
+                    conn.duration_seconds = (conn.timestamp - start_time).total_seconds()
+                else:
+                    conn.duration_seconds = 0.0
 
             for conn_obj in connections:
                 rep = get_ip_reputation(conn_obj.remote_ip)
@@ -76,14 +89,15 @@ def main():
                 conn_obj.is_malicious = rep['is_malicious']
 
                 # ML Predictions
-                memory_rss_mb = conn_obj.memory_rss / (1024 * 1024)
+                memory_rss_mb = (conn_obj.memory_rss or 0) / (1024 * 1024)
                 conn_obj.tag = predict_connection(
-                    conn_obj.cpu_percent,
-                    memory_rss_mb,
-                    conn_obj.connection_count,
-                    conn_obj.duration_seconds,
-                    conn_obj.is_remote_ipv6
+                conn_obj.cpu_percent or 0.0,
+                memory_rss_mb,
+                conn_obj.connection_count or 0,
+                conn_obj.duration_seconds or 0.0,
+                conn_obj.is_remote_ipv6 or 0
                 )
+                
                 logging.debug(
                     f"[ML] Tag={conn_obj.tag} | PID={conn_obj.pid}, CPU={conn_obj.cpu_percent}, "
                     f"MEM_MB={memory_rss_mb:.2f}, ConnCount={conn_obj.connection_count}, "

@@ -13,8 +13,9 @@ def export_all_data():
     cursor.execute('''
         SELECT
             pid, user, process_name,
+            cpu_percent, memory_rss, connection_count, duration_seconds, is_remote_ipv6,
             local_port, remote_ip, remote_port,
-            cpu_percent, memory_rss, timestamp, status, tag
+            status, tag, timestamp
         FROM connections
     ''')
     rows = cursor.fetchall()
@@ -24,13 +25,14 @@ def export_all_data():
         writer = csv.writer(csvfile)
         writer.writerow([
             'pid', 'user', 'process_name',
+            'cpu_percent', 'memory_rss_mb', 'connection_count', 'duration_seconds', 'is_remote_ipv6',
             'local_port', 'remote_ip', 'remote_port',
-            'cpu_percent', 'memory_rss_mb', 'timestamp', 'status', 'tag'
+            'status', 'tag', 'timestamp'
         ])
         for row in rows:
             row = list(row)
-            if row[7] is not None:  # Convert memory_rss from bytes to MB
-                row[7] = round(row[7] / (1024 * 1024), 2)
+            if row[4] is not None:  # Convert memory_rss from bytes to MB
+                row[4] = round(row[4] / (1024 * 1024), 2)
             writer.writerow(row)
 
 if __name__ == '__main__':

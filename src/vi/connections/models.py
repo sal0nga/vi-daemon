@@ -12,17 +12,15 @@ class Connection:
         self.remote_ip = remote_ip
         self.remote_port = int(remote_port)
         self.status = status
-        self.cpu_percent = cpu_percent
-        self.memory_rss = memory_rss
+        self.cpu_percent = cpu_percent if cpu_percent is not None else 0.0
+        self.memory_rss = memory_rss if memory_rss is not None else 0
         self.timestamp = timestamp or datetime.now().astimezone()
-        self.tag = tag
-        self.connection_count = connection_count
-        self.duration_seconds = duration_seconds
-        self.is_remote_ipv6 = is_remote_ipv6
+        self.tag = tag if tag is not None else 'untagged'
+        self.connection_count = connection_count if connection_count is not None else 0
+        self.duration_seconds = duration_seconds if duration_seconds is not None else 0.0
+        self.is_remote_ipv6 = is_remote_ipv6 if is_remote_ipv6 is not None else False
 
     def __repr__(self):
         return (f"<Connection {self.process_name} (PID {self.pid}) "
                 f"{self.local_ip}:{self.local_port} -> "
-                f"{self.remote_ip}:{self.remote_port} [{self.status}] "
-                f"Tag: {self.tag} | ConnCount: {self.connection_count} | "
-                f"Duration: {self.duration_seconds}s | IPv6: {self.is_remote_ipv6}>")
+                f"{self.remote_ip}:{self.remote_port} [{self.status}]>")
