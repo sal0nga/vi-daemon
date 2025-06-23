@@ -1,8 +1,12 @@
+import sys
+import os
+sys.path.insert(0, os.path.expanduser("~/.vi/src"))
+
 from src.ml.inference import predict_connection
 from src.vi.connections.models import Connection
 from datetime import datetime
 
-# Simulated connection
+# Test: Full inference pipeline + schema validation
 conn = Connection(
     pid=1234,
     user="test_user",
@@ -29,3 +33,16 @@ tag = predict_connection(
     conn.is_remote_ipv6
 )
 print(f"Inference result: {tag}")
+
+# Test: Schema validation with bad input
+try:
+    bad_features = {
+        "cpu_percent": "not_a_float",
+        "memory_rss_mb": 100.0,
+        "connection_count": 2,
+        "duration_seconds": 10.0,
+        "is_remote_ipv6": 0
+    }
+    predict_connection(**bad_features)
+except Exception as e:
+    print(f"Schema validation error (expected): {e}")

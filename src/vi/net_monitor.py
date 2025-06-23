@@ -54,6 +54,10 @@ def get_active_connections():
                 continue
 
             name, pid, user, fd, type_, device, size_off, node, name_field = parts[:9]
+            try:
+                name = bytes(name, "utf-8").decode("unicode_escape")
+            except Exception:
+                name = name.encode('utf-8', errors='ignore').decode('utf-8', errors='ignore')
 
             if '->' not in name_field:
                 continue
