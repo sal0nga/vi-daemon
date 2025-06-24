@@ -121,7 +121,7 @@ Produces labeled CSV data for training and verifies ML inference via schema-vali
 
 **Keenan Salonga**  
 Master's in Cybersecurity  
-[LinkedIn](https://www.linkedin.com/in/keenansalonga) • [GitHub](https://github.com/krossteil)
+[LinkedIn](https://www.linkedin.com/in/kmsalonga) • [GitHub](https://github.com/sal0nga)
 
 ---
 
