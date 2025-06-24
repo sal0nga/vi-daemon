@@ -60,9 +60,9 @@ Vi monitors outbound network connections and associates them with the processes 
 │   ├── ml/           # ML inference + dummy model
 │   └── vi/
 │       ├── connections/    # models.py, schemas.py
-│       ├── alerts.py       # (planned)
+│       ├── alerts.py       
 │       ├── baseline.py
-│       ├── behavior.py     # (planned)
+│       ├── behavior.py     
 │       ├── config.py
 │       ├── daemon.py
 │       ├── net_monitor.py
