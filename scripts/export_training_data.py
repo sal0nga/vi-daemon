@@ -15,7 +15,7 @@ def export_all_data():
             pid, user, process_name,
             cpu_percent, memory_rss, connection_count, duration_seconds, is_remote_ipv6,
             local_port, remote_ip, remote_port,
-            status, tag, timestamp
+            status, tag, anomaly_score, timestamp
         FROM connections
     ''')
     rows = cursor.fetchall()
@@ -27,7 +27,7 @@ def export_all_data():
             'pid', 'user', 'process_name',
             'cpu_percent', 'memory_rss_mb', 'connection_count', 'duration_seconds', 'is_remote_ipv6',
             'local_port', 'remote_ip', 'remote_port',
-            'status', 'tag', 'timestamp'
+            'status', 'tag', 'anomaly_score', 'timestamp'
         ])
         for row in rows:
             row = list(row)

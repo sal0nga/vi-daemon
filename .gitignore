@@ -5,3 +5,6 @@ __pycache__/
 vi.log
 vi.stdout.log
 vi.stderr.log
+config/baseline.json
+config/linkage.json
+data/training_data.csv

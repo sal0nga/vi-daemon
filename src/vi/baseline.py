@@ -1,9 +1,15 @@
 # Manages Vi's baseline of seen outbound IPs and the persisted mapping of PID to IPs.
 
+from vi.config import config
+# Manages Vi's baseline of seen outbound IPs and the persisted mapping of PID to IPs.
+
 import json
 import logging
 from pathlib import Path
 from datetime import datetime
+
+# Define anomaly threshold from settings
+ANOMALY_STDDEV_THRESHOLD = config.anomaly['stddev_threshold']
 
 # Path to baseline data
 BASELINE_FILE = Path.home() / ".vi" / "config" / "baseline.json"
@@ -71,6 +77,23 @@ def update_baseline(connections):
                 logging.info(f"[!] New outbound IP detected: {ip} at {datetime.now()}")
 
     tracker.track_connections(connections, known_links)
+
+    # Compute anomaly_score for each connection based on duration
+    for conn in connections:
+        try:
+            if conn.duration_seconds is not None and conn.connection_count is not None:
+                mean_duration = sum(c.duration_seconds for c in connections if c.duration_seconds is not None) / len(connections)
+                stddev_duration = (sum((c.duration_seconds - mean_duration) ** 2 for c in connections if c.duration_seconds is not None) / len(connections)) ** 0.5
+                if stddev_duration > 0:
+                    z_score = (conn.duration_seconds - mean_duration) / stddev_duration
+                    conn.anomaly_score = round(abs(z_score), 4)
+                else:
+                    conn.anomaly_score = 0.0
+            else:
+                conn.anomaly_score = 0.0
+        except Exception as e:
+            logging.warning(f"[WARN] Failed to compute anomaly score for PID {getattr(conn, 'pid', 'unknown')}: {e}")
+
     save_linkage(known_links)
 
     if new_ips:

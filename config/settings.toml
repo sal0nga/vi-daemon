@@ -30,3 +30,15 @@ min_severity = "high"
 alert_new_process = true
 # Turn on/off “new port for known process” alerts
 alert_new_process_port = true
+
+
+[anomaly]
+# Enable or disable threshold-based anomaly detection
+enabled = true
+
+# Threshold (in standard deviations) above which a value is considered anomalous
+zscore_threshold = 3.0
+stddev_threshold = 2.0
+
+# Minimum number of baseline entries required before enabling detection
+min_samples = 30

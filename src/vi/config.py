@@ -31,6 +31,13 @@ class Config:
             'alert_new_process_port': True
         }
 
+        # Anomaly detection defaults
+        self.anomaly = {
+            'enabled': True,
+            'deviation_threshold': 3.0,  # Stddevs from mean to trigger anomaly flag
+            'stddev_threshold': 2.0  # Minimum stddev to allow anomaly detection on feature
+        }
+
         # Load overrides from settings.toml
         cfg_path = Path.home() / '.vi' / 'config' / 'settings.toml'
         if cfg_path.exists():
@@ -71,6 +78,16 @@ class Config:
             self.behavior['alert_new_process_port'] = bool(
                 beh.get('alert_new_process_port', self.behavior['alert_new_process_port'])
             )
+
+            # Anomaly overrides from settings.toml
+            anomaly_cfg = data.get('anomaly', {})
+            self.anomaly['enabled'] = bool(anomaly_cfg.get('enabled', self.anomaly['enabled']))
+            self.anomaly['deviation_threshold'] = float(
+                anomaly_cfg.get('deviation_threshold', self.anomaly['deviation_threshold'])
+            )
+            self.anomaly['stddev_threshold'] = float(
+                anomaly_cfg.get('stddev_threshold', self.anomaly['stddev_threshold'])
+            )
         
         # Validate loaded configuration
         self._validate()
@@ -103,6 +120,14 @@ class Config:
             raise ValueError(f"behavior.alert_new_process must be true/false (got {self.behavior['alert_new_process']!r})")
         if not isinstance(self.behavior['alert_new_process_port'], bool):
             raise ValueError(f"behavior.alert_new_process_port must be true/false (got {self.behavior['alert_new_process_port']!r})")
+
+        # Validate anomaly settings
+        if not isinstance(self.anomaly['enabled'], bool):
+            raise ValueError(f"anomaly.enabled must be true/false (got {self.anomaly['enabled']!r})")
+        if not isinstance(self.anomaly['deviation_threshold'], (float, int)) or self.anomaly['deviation_threshold'] <= 0:
+            raise ValueError(f"anomaly.deviation_threshold must be a positive number (got {self.anomaly['deviation_threshold']!r})")
+        if not isinstance(self.anomaly['stddev_threshold'], (float, int)) or self.anomaly['stddev_threshold'] <= 0:
+            raise ValueError(f"anomaly.stddev_threshold must be a positive number (got {self.anomaly['stddev_threshold']!r})")
 
 # Singleton instance
 config = Config()

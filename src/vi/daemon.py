@@ -89,6 +89,7 @@ def main():
     known_links = load_linkage()
     # Set up SQLite databases for alerts, behavior, and intel
     initialize_databases()
+    last_stats_time = datetime.now()
 
     from collections import defaultdict
 
@@ -191,6 +192,17 @@ def main():
                 tracker.track_connections(connections, known_links)
             except Exception:
                 logging.exception("[BASELINE] Failed to update baseline or track connection linkage")
+
+            # Periodically recompute and store baseline stats every 5 minutes
+            if (datetime.now() - last_stats_time).total_seconds() >= 300:
+                try:
+                    from vi.connections.storage import compute_and_store_baseline_stats
+                    compute_and_store_baseline_stats()
+                    last_stats_time = datetime.now()
+                    logging.info("[BASELINE] Baseline stats recomputed and stored")
+                except Exception:
+                    logging.exception("[BASELINE] Failed to recompute or store baseline stats")
+
             time.sleep(config.scan_interval)
     
     except Exception:
